@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Conferência de CTO</title>
+  <style>
+    body {
+      background-color: #1f1f1f;
+      color: #e0e0e0;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      width: 90%;
+      margin: auto;
+      padding: 20px;
+      background-color: #2a2a2a;
+      border-radius: 10px;
+    }
+
+    input, button, select {
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    input[type="text"], input[type="number"], input[type="date"] {
+      width: 100%;
+      background-color: #333;
+      color: #e0e0e0;
+    }
+
+    button {
+      background-color: #00c853;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #00e676;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      background-color: #3a3a3a;
+    }
+
+    th, td {
+      border: 1px solid #555;
+      padding: 10px;
+      text-align: center;
+    }
+
+    thead {
+      background-color: #424242;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .nav-buttons {
+      margin-bottom: 20px;
+    }
+
+    .nav-buttons button {
+      margin-right: 10px;
+      background-color: #2196f3;
+    }
+
+    .nav-buttons button.active {
+      background-color: #0d47a1;
+    }
+
+    #registrosFiltrados div {
+      margin-bottom: 10px;
+      border-bottom: 1px solid #444;
+      padding-bottom: 5px;
+    }
+
+    .search-input {
+      width: 100%;
+      background-color: #333;
+      color: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav-buttons">
+      <button id="btnCadastro" class="active" onclick="mostrarTela('cadastro')">Cadastrar Conferência</button>
+      <button id="btnPesquisa" onclick="mostrarTela('pesquisa')">Pesquisar Registros</button>
+    </div>
+
+    <!-- Tela de Cadastro -->
+    <div id="telaCadastro">
+      <h2>Conferência de CTO</h2>
+
+      <div class="form-topo">
+        <label>Nome da CTO:</label>
+        <input type="text" id="cto" />
+
+        <label>Quantidade de Portas:</label>
+        <input type="number" id="qtdPortas" />
+
+        <label>Técnico Interno:</label>
+        <input type="text" id="tecnicoInterno" />
+
+        <label>Técnico Externo:</label>
+        <input type="text" id="tecnicoExterno" />
+
+        <label>Cidade:</label>
+        <input type="text" id="cidade" />
+
+        <label>Data:</label>
+        <input type="date" id="data" />
+
+        <button onclick="gerarLinhas()">Gerar Linhas</button>
+      </div>
+
+      <table id="tabela">
+        <thead>
+          <tr>
+            <th>Porta</th>
+            <th>Cliente</th>
+            <th>Status</th>
+            <th>Salvar</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <button onclick="salvarConferencias()">Salvar Conferências</button>
+    </div>
+
+    <!-- Tela de Pesquisa -->
+    <div id="telaPesquisa" class="hidden">
+      <h2>Pesquisar Registros</h2>
+      <input type="text" id="busca" placeholder="Buscar por CTO, cliente, cidade, status..." class="search-input" oninput="filtrarRegistros()" />
+      <div id="registrosFiltrados"></div>
+    </div>
+  </div>
+
+  <script>
+    function mostrarTela(tela) {
+      const cadastro = document.getElementById("telaCadastro");
+      const pesquisa = document.getElementById("telaPesquisa");
+      const btnCadastro = document.getElementById("btnCadastro");
+      const btnPesquisa = document.getElementById("btnPesquisa");
+
+      if (tela === "cadastro") {
+        cadastro.classList.remove("hidden");
+        pesquisa.classList.add("hidden");
+        btnCadastro.classList.add("active");
+        btnPesquisa.classList.remove("active");
+      } else {
+        cadastro.classList.add("hidden");
+        pesquisa.classList.remove("hidden");
+        btnCadastro.classList.remove("active");
+        btnPesquisa.classList.add("active");
+        filtrarRegistros();
+      }
+    }
+
+    function gerarLinhas() {
+      const qtd = parseInt(document.getElementById("qtdPortas").value);
+      const tbody = document.querySelector("#tabela tbody");
+      tbody.innerHTML = "";
+
+      for (let i = 1; i <= qtd; i++) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i}</td>
+          <td><input type="text" /></td>
+          <td>
+            <select>
+              <option>ATIVO</option>
+              <option>VAGA</option>
+              <option>SE MUDOU</option>
+              <option>CANCELADO</option>
+            </select>
+          </td>
+          <td><button onclick="salvarLinha(this)">✔️</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function salvarLinha(btn) {
+      btn.disabled = true;
+      btn.innerText = "✅";
+    }
+
+    function salvarConferencias() {
+      const nomeCTO = document.getElementById("cto").value;
+      const tecnicoInterno = document.getElementById("tecnicoInterno").value;
+      const tecnicoExterno = document.getElementById("tecnicoExterno").value;
+      const cidade = document.getElementById("cidade").value;
+      const data = document.getElementById("data").value;
+      const linhas = document.querySelectorAll("#tabela tbody tr");
+
+      const registros = [];
+
+      linhas.forEach((linha, index) => {
+        const cliente = linha.children[1].querySelector("input").value;
+        const status = linha.children[2].querySelector("select").value;
+
+        registros.push({
+          porta: index + 1,
+          cliente,
+          status,
+          nomeCTO,
+          tecnicoInterno,
+          tecnicoExterno,
+          cidade,
+          data
+        });
+      });
+
+      let antigos = JSON.parse(localStorage.getItem("conferencias")) || [];
+      antigos = antigos.concat(registros);
+      localStorage.setItem("conferencias", JSON.stringify(antigos));
+
+      alert("Conferências salvas com sucesso!");
+      document.querySelector("#tabela tbody").innerHTML = "";
+    }
+
+    function filtrarRegistros() {
+      const registros = JSON.parse(localStorage.getItem("conferencias")) || [];
+      const container = document.getElementById("registrosFiltrados");
+      const busca = document.getElementById("busca").value.toLowerCase();
+      container.innerHTML = "";
+
+      const filtrados = registros.filter(reg =>
+        Object.values(reg).some(v => String(v).toLowerCase().includes(busca))
+      );
+
+      if (filtrados.length === 0) {
+        container.innerHTML = "<p>Nenhum registro encontrado.</p>";
+        return;
+      }
+
+      filtrados.forEach((reg, i) => {
+        container.innerHTML += `
+          <div>
+            <strong>#${i + 1}</strong> - CTO: ${reg.nomeCTO}, Porta: ${reg.porta}, Cliente: ${reg.cliente}, Status: ${reg.status}, Cidade: ${reg.cidade}, Data: ${reg.data}, Técnico Interno: ${reg.tecnicoInterno}, Técnico Externo: ${reg.tecnicoExterno}
+          </div>
+        `;
+      });
+    }
+  </script>
+</body>
+</html>
